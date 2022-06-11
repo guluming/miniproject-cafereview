@@ -26,38 +26,43 @@ public class ReplyController {
     //댓글 작성(userDetails 정보 필요)
     @PostMapping("/{cafeid}/reply/save")
     public boolean createReply(@PathVariable Long cafeid, @RequestBody ReplyRequestDto requestDto){
-        if(cafeid != null){
+        try{
         Long userId = 1L;
         requestDto.setNickname("tempNickname");
         replyService.createReply(requestDto, userId, cafeid);
         return true;
+        }catch (Exception e){
+            String error = e.getMessage();
+            log.warn(error);
+            return false;}
         }
-        log.info("cafaid is null");
-        return false;
-    }
 
     //댓글 수정(userDetails 정보 필요)
     @PatchMapping("/{cafeid}/reply/{replyid}/update")
     public boolean updateReply(@PathVariable Long cafeid, @PathVariable Long replyid, @RequestBody ReplyRequestDto requestDto){
-        if(cafeid != null && replyid != null){
+        try {
         Long userId = 1L;
         String nickname = "tempNickname";
         replyService.update(replyid, requestDto, nickname, userId, cafeid);
         return true;
-        }
-        log.info("cafeid and replyid are null");
-        return false;}
+        } catch (Exception e){
+            String error = e.getMessage();
+            log.warn(error);
+            return false;
+        }}
 
     //댓글 삭제(userDetails 정보 필요)
     @DeleteMapping("{cafeid}/reply/{replyid}/delete")
     public boolean deleteReply(@PathVariable Long replyid, @PathVariable Long cafeid){
-        if( replyid != null) {
+        try {
         Long userId = 1L;
         replyService.deleteReply(replyid, userId, cafeid);
         return true;
-    }
-        log.info("replyid is null.");
-        return false;
+        } catch (Exception e){
+            String error = e.getMessage();
+            log.warn(error);
+            return false;
+        }
     }
 
 }

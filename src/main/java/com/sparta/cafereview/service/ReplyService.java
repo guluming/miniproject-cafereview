@@ -26,21 +26,24 @@ public class ReplyService {
     }
     // 댓글 작성
     public boolean createReply(ReplyRequestDto requestDto, Long userId, Long cafeId){
-        String replyCheck = requestDto.getReply();
-        if (replyCheck.contains("script") || replyCheck.contains("<") || replyCheck.contains(">")) {
-            Reply reply = new Reply(requestDto, userId, cafeId, "xss 공격 지양 요청 드립니다.");
-            replyRepository.save(reply);
-            return false;
-        }
+        replyValidate(requestDto);
         Reply reply = new Reply(requestDto, userId, cafeId);
         replyRepository.save(reply);
-        log.info("댓글 작성 완료하였습니다." + reply);
+        log.info("replyid : {} 댓글 작성 완료하였습니다.", reply.getId());
         return true;
     }
 
+    private void replyValidate(ReplyRequestDto requestDto){
+        String replyCheck = requestDto.getReply();
+        if (replyCheck.contains("script") || replyCheck.contains("<") || replyCheck.contains(">")){
+            log.warn("xss 공격은 불가합니다.");
+            throw new RuntimeException("xss 공격은 불가합니다.");
+        }
+    }
 
     // 댓글 업데이트
     public boolean update(Long replyid, ReplyRequestDto requestDto, String nickname, Long userId, Long cafeId){
+        replyValidate(requestDto);
         Reply reply = replyRepository.findById(replyid).orElseThrow(
                 () -> new IllegalArgumentException("댓글이 존재하지 않습니다.")
         );
@@ -48,7 +51,7 @@ public class ReplyService {
         if(Objects.equals(writerId, userId)){
             reply.update(requestDto);
             replyRepository.save(reply);
-            log.info("댓글 수정 완료" + reply);
+            log.info("replyid : {} 댓글 수정 완료하였습니다.", reply.getId());
             return true;
         }
         log.info("작성한 유저가 아닙니다.");
@@ -61,8 +64,7 @@ public class ReplyService {
         ).getUserId();
         if(Objects.equals(writeId, userId)){
             replyRepository.deleteById(replyId);
-            List<Reply> replies = replyRepository.findAllByCafeId(cafeId);
-            log.info("댓글 삭제 완료" + replies);
+            log.info("replyid : {} 댓글 삭제 완료하였습니다.", replyId);
             return true;
         }
         log.info("작성한 유저가 아닙니다.");
